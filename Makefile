@@ -1,31 +1,66 @@
-NAME = philo
+# Colors for output
+GREEN = \033[1;32m
+YELLOW = \033[1;33m
+RED = \033[1;31m
+RESET = \033[0m
 
+# Compiler and flags
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror -pthread
 
-UNAME_S := $(shell uname -s)
-ifeq ($(UNAME_S),Linux)
-    CFLAGS += -D_DEFAULT_SOURCE
-endif
+# Directories
+MANDATORY_DIR = philo
+BONUS_DIR = philo_bonus
+MANDATORY_SRC_DIR = $(MANDATORY_DIR)/src
+MANDATORY_INC_DIR = $(MANDATORY_DIR)/includes
+BONUS_SRC_DIR = $(BONUS_DIR)/src
+BONUS_INC_DIR = $(BONUS_DIR)/includes
+BUILD_DIR = build
 
-SRCS = src/main.c src/init.c src/philosopher.c src/actions.c src/utils.c src/time.c
+# Sources and objects
+MANDATORY_SRCS = $(wildcard $(MANDATORY_SRC_DIR)/*.c)
+BONUS_SRCS = $(wildcard $(BONUS_SRC_DIR)/*.c)
+MANDATORY_OBJS = $(MANDATORY_SRCS:$(MANDATORY_SRC_DIR)/%.c=$(BUILD_DIR)/mandatory/%.o)
+BONUS_OBJS = $(BONUS_SRCS:$(BONUS_SRC_DIR)/%.c=$(BUILD_DIR)/bonus/%.o)
 
-OBJS = $(SRCS:.c=.o)
+# Targets
+MANDATORY_EXEC = philo
+BONUS_EXEC = philo_bonus
 
-all: $(NAME)
+# Default target
+all: $(MANDATORY_EXEC)
 
-$(NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+# Build mandatory
+$(MANDATORY_EXEC): $(MANDATORY_OBJS)
+	@echo -e "$(GREEN)Linking mandatory executable $(MANDATORY_EXEC)...$(RESET)"
+	$(CC) $(CFLAGS) $(MANDATORY_OBJS) -o $(MANDATORY_EXEC)
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+# Build bonus
+bonus: $(BONUS_EXEC)
 
+$(BONUS_EXEC): $(BONUS_OBJS)
+	@echo -e "$(GREEN)Linking bonus executable $(BONUS_EXEC)...$(RESET)"
+	$(CC) $(CFLAGS) $(BONUS_OBJS) -o $(BONUS_EXEC)
+
+# Compile object files
+$(BUILD_DIR)/mandatory/%.o: $(MANDATORY_SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -I$(MANDATORY_INC_DIR) -c $< -o $@
+
+$(BUILD_DIR)/bonus/%.o: $(BONUS_SRC_DIR)/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -I$(BONUS_INC_DIR) -c $< -o $@
+
+# Cleaning rules
 clean:
-	rm -f $(OBJS)
+	@echo -e "$(YELLOW)Cleaning object files...$(RESET)"
+	rm -rf $(BUILD_DIR)
 
 fclean: clean
-	rm -f $(NAME)
+	@echo -e "$(RED)Cleaning all executables...$(RESET)"
+	rm -f $(MANDATORY_EXEC) $(BONUS_EXEC)
 
 re: fclean all
 
-.PHONY: all clean fclean re
+# Phony targets
+.PHONY: all bonus clean fclean re

@@ -1,0 +1,86 @@
+Philosophers Test Results - Mon Jan 27 01:00:46 PM CET 2025
+=== Test: Stop after meals ===
+Args: 5 800 200 200 7
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: Instant death ===
+Args: 1 0 200 200
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: Zero values ===
+Args: 5 800 0 200
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: Basic test ===
+Args: 5 800 200 200
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: Maximum int values ===
+Args: 5 2147483647 2147483647 2147483647
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: Odd number of philosophers ===
+Args: 7 800 200 200
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: Too many arguments ===
+Args: 5 800 200 200 7 100
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: Large number of philosophers ===
+Args: 200 800 200 200
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: Non-numeric input ===
+Args: five 800 200 200
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: Very short durations ===
+Args: 5 20 10 10
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: One meal only ===
+Args: 5 800 200 200 1
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: Death case ===
+Args: 4 310 200 100
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: Too few arguments ===
+Args: 5 800 200
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: One philosopher ===
+Args: 1 800 200 200
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: Negative values ===
+Args: -5 800 200 200
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: Even number of philosophers ===
+Args: 6 800 200 200
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
+=== Test: Long durations ===
+Args: 5 2000 1000 1000
+Output:
+timeout: failed to run command ‘./philo’: Permission denied
+Exit code: 126
