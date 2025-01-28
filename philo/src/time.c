@@ -20,7 +20,7 @@ void precise_sleep(long long microseconds)
 #endif
 }
 
-void smart_sleep(long long duration, t_state *state)
+int smart_sleep(long long duration, t_state *state)
 {
     long long start;
     long long now;
@@ -33,4 +33,5 @@ void smart_sleep(long long duration, t_state *state)
             break;
         precise_sleep(100);
     }
+    return (0);
 }

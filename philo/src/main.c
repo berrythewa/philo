@@ -32,7 +32,13 @@ static void join_threads(t_state *state)
 
 static int check_death(t_state *state, int i)
 {
-    long long current_time = get_time();
+    long long current_time;
+
+    // If philosopher is eating, they're alive
+    if (state->current_actions[i] == EATING)
+        return (0);
+    
+    current_time = get_time();
     if (current_time - state->philosophers[i].last_meal_time > state->time_to_die)
     {
         pthread_mutex_lock(&state->write_mutex);
@@ -59,10 +65,12 @@ void *monitor_routine(void *arg)
             if (check_death(state, i))
                 return (NULL);
         }
-        usleep(1000);  // Sleep for 1ms to reduce CPU usage
+        usleep(500);  // Faster checks
     }
     return (NULL);
 }
+
+
 
 
 int main(int argc, char **argv)

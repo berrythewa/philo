@@ -34,7 +34,12 @@ void *philosopher_routine(void *arg)
         eat(philo);
         if (philo->state->someone_died || philo->state->all_ate)
             break;
-        sleep_and_think(philo);
+        if (_sleep(philo) != 0)
+            break;
+        if (philo->state->someone_died || philo->state->all_ate)
+            break;
+        if (think(philo) != 0)
+            break;
     }
 
     return (NULL);

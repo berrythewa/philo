@@ -24,8 +24,8 @@ MANDATORY_OBJS = $(MANDATORY_SRCS:$(MANDATORY_SRC_DIR)/%.c=$(BUILD_DIR)/mandator
 BONUS_OBJS = $(BONUS_SRCS:$(BONUS_SRC_DIR)/%.c=$(BUILD_DIR)/bonus/%.o)
 
 # Targets
-MANDATORY_EXEC = philo
-BONUS_EXEC = philo_bonus
+MANDATORY_EXEC = $(MANDATORY_DIR)/philo
+BONUS_EXEC = $(BONUS_DIR)/philo_bonus
 
 # Default target
 all: $(MANDATORY_EXEC)

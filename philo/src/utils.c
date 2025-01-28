@@ -81,4 +81,5 @@ void free_resources(t_state *state)
     pthread_mutex_destroy(&state->write_mutex);
     if (state->philosophers)
         free(state->philosophers);
+    free(state->current_actions);
 }

@@ -8,6 +8,14 @@
 # include <sys/time.h>
 # include <limits.h>
 
+typedef struct s_state t_state;
+typedef enum e_action
+{
+    THINKING,
+    EATING,
+    SLEEPING
+} t_action;
+
 typedef struct s_philosopher
 {
     int             id;
@@ -15,12 +23,12 @@ typedef struct s_philosopher
     int             right_fork;
     int             meals_eaten;
     long long       last_meal_time;
-    struct s_state  *state;
+    t_state         *state;
     pthread_t       thread;
 } t_philosopher;
 
 
-typedef struct s_state
+struct s_state
 {
     int             num_philosophers;
     int             time_to_die;
@@ -34,20 +42,23 @@ typedef struct s_state
     pthread_mutex_t *forks;
     pthread_mutex_t write_mutex;
     t_philosopher   *philosophers;
-} t_state;
+    t_action        *current_actions;  // Add this line
+
+};
 
 
 
 // Function prototypes
 int         init_state(t_state *state, int argc, char **argv);
 void        *philosopher_routine(void *arg);
-void        take_forks(t_philosopher *philo);
-void        eat(t_philosopher *philo);
-void        sleep_and_think(t_philosopher *philo);
+int         take_forks(t_philosopher *philo);
+int         eat(t_philosopher *philo);
+int         _sleep(t_philosopher *philo);
+int         think(t_philosopher *philo);
 long long   get_time(void);
-void        smart_sleep(long long duration, t_state *state);
+int         smart_sleep(long long duration, t_state *state);
 void        print_status(t_state *state, int id, char *status);
-int        ft_atoi(const char *str);
+int         ft_atoi(const char *str);
 int         ft_atoi_lib(const char *str);
 void        free_resources(t_state *state);
 

@@ -93,6 +93,15 @@ int init_state(t_state *state, int argc, char **argv)
         return (1);
     }
 
+    // Initialize current_actions array
+    state->current_actions = malloc(sizeof(t_action) * state->num_philosophers);
+    if (!state->current_actions)
+        return (1);
+    
+    // Set initial action for all philosophers to THINKING
+    for (int i = 0; i < state->num_philosophers; i++)
+        state->current_actions[i] = THINKING;
+
     if (init_mutexes(state) != 0 || init_philosophers(state) != 0)
     {
         free_resources(state);
