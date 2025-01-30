@@ -9,12 +9,6 @@
 # include <limits.h>
 
 typedef struct s_state t_state;
-typedef enum e_action
-{
-    THINKING,
-    EATING,
-    SLEEPING
-} t_action;
 
 typedef struct s_philosopher
 {
@@ -26,7 +20,6 @@ typedef struct s_philosopher
     t_state         *state;
     pthread_t       thread;
 } t_philosopher;
-
 
 struct s_state
 {
@@ -42,22 +35,17 @@ struct s_state
     pthread_mutex_t *forks;
     pthread_mutex_t write_mutex;
     t_philosopher   *philosophers;
-    t_action        *current_actions;  // Add this line
-
 };
-
-
 
 // Function prototypes
 int         init_state(t_state *state, int argc, char **argv);
 void        *philosopher_routine(void *arg);
-int         take_forks(t_philosopher *philo);
 int         eat(t_philosopher *philo);
 int         _sleep(t_philosopher *philo);
 int         think(t_philosopher *philo);
 long long   get_time(void);
 int         smart_sleep(long long duration, t_state *state);
-void        print_status(t_state *state, int id, char *status);
+int         log_status(t_state *state, int id, char *status);
 int         ft_atoi(const char *str);
 int         ft_atoi_lib(const char *str);
 void        free_resources(t_state *state);

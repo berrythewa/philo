@@ -63,7 +63,7 @@ static int init_philosophers(t_state *state)
         state->philosophers[i].left_fork = i;
         state->philosophers[i].right_fork = (i + 1) % state->num_philosophers;
         state->philosophers[i].meals_eaten = 0;
-        state->philosophers[i].last_meal_time = 0;
+        state->philosophers[i].last_meal_time = state->start_time;
         state->philosophers[i].state = state;
     }
     
@@ -79,7 +79,6 @@ int init_state(t_state *state, int argc, char **argv)
     state->time_to_die = ft_atoi_lib(argv[2]);
     state->time_to_eat = ft_atoi_lib(argv[3]);
     state->time_to_sleep = ft_atoi_lib(argv[4]);
-    //optional argument: number_of_times_each_philosopher_must_eat
     state->num_meals = (argc == 6) ? ft_atoi_lib(argv[5]) : -1;
     state->someone_died = 0;
     state->finished_eating = 0;
@@ -92,15 +91,6 @@ int init_state(t_state *state, int argc, char **argv)
         printf("Error: All time values must be greater than 0.\n");
         return (1);
     }
-
-    // Initialize current_actions array
-    state->current_actions = malloc(sizeof(t_action) * state->num_philosophers);
-    if (!state->current_actions)
-        return (1);
-    
-    // Set initial action for all philosophers to THINKING
-    for (int i = 0; i < state->num_philosophers; i++)
-        state->current_actions[i] = THINKING;
 
     if (init_mutexes(state) != 0 || init_philosophers(state) != 0)
     {

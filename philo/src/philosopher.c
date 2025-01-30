@@ -1,46 +1,41 @@
 #include "../includes/philosophers.h"
 
-static int check_meals(t_philosopher *philo)
-{
-    if (philo->state->num_meals != -1 && philo->meals_eaten >= philo->state->num_meals)
-    {
-        pthread_mutex_lock(&philo->state->write_mutex);
-        philo->state->finished_eating++;
-        if (philo->state->finished_eating == philo->state->num_philosophers)
-            philo->state->all_ate = 1;
-        pthread_mutex_unlock(&philo->state->write_mutex);
-        return (1);
-    }
-    return (0);
-}
 
 void *philosopher_routine(void *arg)
 {
-    t_philosopher *philo;
+    t_philosopher *philo = (t_philosopher *)arg;
 
-    philo = (t_philosopher *)arg;
-    philo->last_meal_time = get_time();
+    // Special case for single philosopher
+    if (philo->state->num_philosophers == 1)
+    {
+        log_status(philo->state, philo->id, "has taken a fork");
+        while (!philo->state->someone_died)
+            smart_sleep(1, philo->state);
+        return (NULL);
+    }
 
-    if (philo->id % 2 == 0)
-        usleep(1000);  // Stagger even-numbered philosophers
+    // Even philosophers start first
+    if (philo->id % 2 == 1)
+        smart_sleep(philo->state->time_to_eat, philo->state);  // Odd philosophers wait for even ones to get started
 
     while (!philo->state->someone_died && !philo->state->all_ate)
     {
-        if (check_meals(philo))
-            break;
-        take_forks(philo);
+        think(philo);
+        
+        // Skip eating if we've reached our meal limit
+        if (philo->state->num_meals != -1 && philo->meals_eaten >= philo->state->num_meals)
+            continue;
+        
         if (philo->state->someone_died || philo->state->all_ate)
+        {
+            // Release forks if we have them (in case we were eating when someone died)
+            pthread_mutex_unlock(&philo->state->forks[philo->left_fork]);
+            pthread_mutex_unlock(&philo->state->forks[philo->right_fork]);
             break;
-        eat(philo);
-        if (philo->state->someone_died || philo->state->all_ate)
-            break;
-        if (_sleep(philo) != 0)
-            break;
-        if (philo->state->someone_died || philo->state->all_ate)
-            break;
-        if (think(philo) != 0)
-            break;
+        }
+            
+        if (eat(philo) == 0)  // Only sleep if eating was successful
+            _sleep(philo);
     }
-
     return (NULL);
 }

@@ -1,18 +1,24 @@
 #include "../includes/philosophers.h"
 
-void print_status(t_state *state, int id, char *status)
+int log_status(t_state *state, int id, char *status)
 {
     long long current_time;
 
-    pthread_mutex_lock(&state->write_mutex);
+    if (pthread_mutex_lock(&state->write_mutex) != 0)
+        return (1);
+        
     if (!state->someone_died)
     {
         current_time = get_time() - state->start_time;
         printf("%lld %d %s\n", current_time, id, status);
         fflush(stdout);
     }
-    pthread_mutex_unlock(&state->write_mutex);
+    
+    if (pthread_mutex_unlock(&state->write_mutex) != 0)
+        return (1);
+    return (0);
 }
+
 
 int ft_atoi(const char *str)
 {
@@ -81,5 +87,4 @@ void free_resources(t_state *state)
     pthread_mutex_destroy(&state->write_mutex);
     if (state->philosophers)
         free(state->philosophers);
-    free(state->current_actions);
 }

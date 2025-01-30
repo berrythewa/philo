@@ -24,14 +24,22 @@ int smart_sleep(long long duration, t_state *state)
 {
     long long start;
     long long now;
+    long long elapsed;
 
     start = get_time();
     while (!(state->someone_died))
     {
         now = get_time();
-        if ((now - start) >= duration)
+        elapsed = now - start;
+        
+        // Handle potential overflow for large durations
+        if (elapsed < 0 || elapsed >= duration)
             break;
-        precise_sleep(100);
+            
+        // Use smaller sleep intervals for large durations
+        long long remaining = duration - elapsed;
+        long long sleep_time = (remaining > 1000) ? 1000 : remaining;
+        precise_sleep(sleep_time * 1000);  // Convert to microseconds
     }
     return (0);
 }

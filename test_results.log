@@ -1,8 +1,0 @@
-Philosophers Test Results - Tue Jan 28 02:46:48 PM CET 2025
-=== Test: Basic test ===
-Args: 5 800 200 200
-Output:
-Created thread for philosopher 1
-0 1 has taken a fork
-0 1 has taken a fork
-Exit code: 124

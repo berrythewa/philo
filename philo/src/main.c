@@ -33,21 +33,43 @@ static void join_threads(t_state *state)
 static int check_death(t_state *state, int i)
 {
     long long current_time;
+    int is_dead = 0;
 
-    // If philosopher is eating, they're alive
-    if (state->current_actions[i] == EATING)
-        return (0);
-    
+    pthread_mutex_lock(&state->write_mutex);  // Lock to ensure atomic check
     current_time = get_time();
+    
+    // Check if time since last meal exceeds time_to_die
     if (current_time - state->philosophers[i].last_meal_time > state->time_to_die)
     {
-        pthread_mutex_lock(&state->write_mutex);
         if (!state->someone_died)
         {
             printf("%lld %d died\n", current_time - state->start_time, i + 1);
             state->someone_died = 1;
+            is_dead = 1;
         }
-        pthread_mutex_unlock(&state->write_mutex);
+    }
+    pthread_mutex_unlock(&state->write_mutex);
+    
+    return is_dead;
+}
+
+static int check_meals(t_state *state)
+{
+    int i;
+    int finished = 0;
+
+    if (state->num_meals == -1)
+        return (0);
+
+    for (i = 0; i < state->num_philosophers; i++)
+    {
+        if (state->philosophers[i].meals_eaten >= state->num_meals)
+            finished++;
+    }
+
+    if (finished == state->num_philosophers)
+    {
+        state->all_ate = 1;
         return (1);
     }
     return (0);
@@ -58,19 +80,23 @@ void *monitor_routine(void *arg)
     t_state *state = (t_state *)arg;
     int i;
 
-    while (!state->someone_died && !state->all_ate)
+    while (1)
     {
+        // Check deaths
         for (i = 0; i < state->num_philosophers; i++)
         {
             if (check_death(state, i))
                 return (NULL);
         }
-        usleep(500);  // Faster checks
+
+        // Check if all philosophers have eaten enough
+        if (check_meals(state))
+            return (NULL);
+
+        usleep(500);  // Small sleep to prevent CPU hogging
     }
     return (NULL);
 }
-
-
 
 
 int main(int argc, char **argv)
@@ -80,7 +106,7 @@ int main(int argc, char **argv)
 
     if (argc != 5 && argc != 6)
     {
-        printf("Usage: %s number_of_philosophers time_to_die time_to_eat time_to_sleep [number_of_times_each_philosopher_must_eat]\n", argv[0]);
+        printf("Error: Invalid number of arguments\nUsage: %s number_of_philosophers time_to_die time_to_eat time_to_sleep [number_of_times_each_philosopher_must_eat]\n", argv[0]);
         return (1);
     }
 
@@ -88,11 +114,10 @@ int main(int argc, char **argv)
     {
         if (ft_atoi_lib(argv[1]) == 0 || ft_atoi_lib(argv[2]) == 0)
         {
-            // This is the "instant death" case
-            // message already printed in init_state
+            printf("Error: All time values must be greater than 0.\n");
             return (0);
         }
-        printf("Error initializing state\n");
+        printf("Error: Failed to initialize state\n");
         return (1);
     }
 

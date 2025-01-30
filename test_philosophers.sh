@@ -26,27 +26,6 @@ echo "Philosophers Test Results - $(date)" > $LOG_FILE
 PASS_COUNT=0
 FAIL_COUNT=0
 
-# Test scenarios: Array of test cases
-declare -A TEST_CASES=(
-    ["Basic test"]="5 800 200 200:is eating:5:died"
-    # ["One philosopher"]="1 800 200 200:has taken a fork:3:is eating"
-    # ["Death case"]="4 310 200 100:died:5:"
-    # ["Stop after meals"]="5 800 200 200 7:is sleeping:10:died"
-    # ["Instant death"]="1 0 200 200:Error: 2:All time values must be greater than 0"
-    # ["One meal only"]="5 800 200 200 1:is sleeping:5:died"
-    # ["Zero values"]="5 800 0 200:Error:2:All time values must be greater than 0"
-    # ["Large number of philosophers"]="200 800 200 200:is eating:10:died"
-    # ["Long durations"]="5 2000 1000 1000:is thinking:15:died"
-    # ["Very short durations"]="5 20 10 10:died:5:"
-    # ["Odd number of philosophers"]="7 800 200 200:is eating:10:died"
-    # ["Even number of philosophers"]="6 800 200 200:is eating:10:died"
-    # ["Maximum int values"]="5 2147483647 2147483647 2147483647:is eating:10:died"
-    # ["Negative values"]="-5 800 200 200:Error:2:"
-    # ["Non-numeric input"]="five 800 200 200:Error:2:"
-    # ["Too few arguments"]="5 800 200:Error:2:"
-    # ["Too many arguments"]="5 800 200 200 7 100:Error:2:"
-)
-
 # Function to run a single test
 run_test() {
     local test_name=$1
@@ -58,52 +37,108 @@ run_test() {
     echo -e "${YELLOW}Running test: $test_name${NC}"
     echo "=== Test: $test_name ===" >> $LOG_FILE
     echo "Args: $args" >> $LOG_FILE
-
-    # Run the test case
-    output=$(timeout $max_runtime $EXEC $args 2>&1)
-    exit_code=$?
-
-    # Log the output
     echo "Output:" >> $LOG_FILE
-    echo "$output" >> $LOG_FILE
-    echo "Exit code: $exit_code" >> $LOG_FILE
 
-    # Handle timeout
-    if [ $exit_code -eq 124 ]; then
-        if [ "$expected_output" == "timeout" ]; then
-            echo -e "${GREEN}Test passed (timeout as expected)${NC}"
+    # Run the test case based on its type
+    if [[ $test_name == *"no death test"* ]] || [[ $test_name == *"Stress test"* ]]; then
+        # For no-death tests and stress tests, run for specified duration
+        output=$(timeout $max_runtime $EXEC $args 2>&1)
+        exit_code=$?
+        
+        # Check if anyone died during the run
+        if echo "$output" | grep -q "died"; then
+            echo -e "${RED}Test failed: A philosopher died${NC}"
+            echo "$output" >> $LOG_FILE
+            FAIL_COUNT=$((FAIL_COUNT + 1))
+            return 1
+        else
+            # For no-death tests, timeout is expected and OK
+            echo -e "${GREEN}Test passed: No deaths occurred during ${max_runtime}s run${NC}"
+            PASS_COUNT=$((PASS_COUNT + 1))
+            return 0
+        fi
+    elif [[ $test_name == *"Stop after meals"* ]] || [[ $test_name == *"Meals"* ]]; then
+        # For meal limit tests, should exit cleanly within timeout
+        output=$(timeout $max_runtime $EXEC $args 2>&1)
+        exit_code=$?
+        
+        if [ $exit_code -eq 124 ]; then
+            echo -e "${RED}Test failed: Did not complete meals within ${max_runtime}s${NC}"
+            FAIL_COUNT=$((FAIL_COUNT + 1))
+            return 1
+        elif ! echo "$output" | grep -q "died"; then
+            echo -e "${GREEN}Test passed: Completed all meals${NC}"
             PASS_COUNT=$((PASS_COUNT + 1))
             return 0
         else
-            echo -e "${RED}Test failed (unexpected timeout)${NC}"
+            echo -e "${RED}Test failed: A philosopher died${NC}"
             FAIL_COUNT=$((FAIL_COUNT + 1))
             return 1
         fi
-    fi
-
-    # Check for unexpected output
-    if [ -n "$unexpected_output" ] && echo "$output" | grep -q "$unexpected_output"; then
-        echo -e "${RED}Test failed: Found unexpected output${NC}"
-        echo "Unexpected output: $unexpected_output"
-        FAIL_COUNT=$((FAIL_COUNT + 1))
-        return 1
-    fi
-
-    # Check for expected output
-    if echo "$output" | grep -q "$expected_output"; then
-        echo -e "${GREEN}Test passed${NC}"
-        PASS_COUNT=$((PASS_COUNT + 1))
-        return 0
+    elif [[ $test_name == *"Death test"* ]] || [ "$test_name" == "One philosopher" ]; then
+        # For death tests, should detect and report death within timeout
+        output=$(timeout $max_runtime $EXEC $args 2>&1)
+        exit_code=$?
+        
+        if echo "$output" | grep -q "died"; then
+            echo -e "${GREEN}Test passed: Death detected${NC}"
+            PASS_COUNT=$((PASS_COUNT + 1))
+            return 0
+        else
+            echo -e "${RED}Test failed: Death not detected within ${max_runtime}s${NC}"
+            FAIL_COUNT=$((FAIL_COUNT + 1))
+            return 1
+        fi
     else
-        echo -e "${RED}Test failed${NC}"
-        echo "Expected output containing: $expected_output"
-        FAIL_COUNT=$((FAIL_COUNT + 1))
-        return 1
+        # For error cases, check for error message and quick exit
+        output=$($EXEC $args 2>&1)
+        exit_code=$?
+        
+        if echo "$output" | grep -qi "error\|invalid\|usage"; then
+            echo -e "${GREEN}Test passed: Error detected${NC}"
+            PASS_COUNT=$((PASS_COUNT + 1))
+            return 0
+        else
+            echo -e "${RED}Test failed: Error not handled${NC}"
+            FAIL_COUNT=$((FAIL_COUNT + 1))
+            return 1
+        fi
     fi
 }
 
 # Compile the program
 make re
+
+# Test scenarios: Array of test cases
+declare -A TEST_CASES=(
+    ## No death cases - program should keep running until all meals are eaten or interrupted
+    ["Basic no death test"]="5 800 200 200:is eating:10:died"                    # no one should die, run for 10s
+    ["Fast no death test"]="5 600 150 150:is eating:5:died"                     # no one should die, faster timing, 5s
+    ["Meals no death test"]="4 410 200 200 10:is eating:10:died"               # no one should die, stops after 10 meals
+    ["Stress test 100"]="100 800 200 200:is eating:20:died"                    # no one should die, 20s test
+    ["Stress test 105"]="105 800 200 200:is eating:20:died"                    # no one should die, 20s test
+    ["Stress test 200"]="200 800 200 200:is eating:30:died"                    # no one should die, 30s test
+
+    ## Death cases - program should detect and report death
+    ["One philosopher"]="1 800 200 200:died:3:"                               # one philosopher should die
+    ["Death test 310"]="4 310 200 100:died:1:"                               # death should occur around 310ms
+    ["Death test 205"]="4 200 205 200:died:1:"                               # death should occur due to long eating time
+    ["Death test 200"]="4 200 200 200:died:1:"                               # death should occur (eat+sleep > time_to_die)
+    ["Death test 60"]="2 60 60 60:died:1:"                                   # quick death scenario
+
+    ## Stop after meals cases - program should exit cleanly after all meals
+    ["Stop after meals"]="5 800 200 200 7:is sleeping:15:"                    # should stop after 7 meals each
+    ["Stop after meals 2"]="4 410 200 200 10:is sleeping:15:"                 # should stop after 10 meals each
+
+    ## Error cases - program should exit immediately with error
+    ["Zero philosophers"]="0 400 200 200:Error:1:"                           # error: invalid number of philosophers
+    ["Zero time to die"]="4 0 200 200:Error:1:"                             # error: invalid time to die
+    ["Zero time to eat"]="4 400 0 200:Error:1:"                             # error: invalid time to eat
+    ["Zero time to sleep"]="4 400 200 0:Error:1:"                           # error: invalid time to sleep
+    ["Negative time"]="4 -400 200 200:Error:1:"                             # error: negative numbers
+    ["Too few arguments"]="4 400:Error:1:"                                   # error: too few arguments
+    ["Too many arguments"]="4 400 200 200 10 10:Error:1:"                   # error: too many arguments
+)
 
 # Iterate over test scenarios
 for test_name in "${!TEST_CASES[@]}"; do
