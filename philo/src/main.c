@@ -112,11 +112,6 @@ int main(int argc, char **argv)
 
     if (init_state(&state, argc, argv) != 0)
     {
-        if (ft_atoi_lib(argv[1]) == 0 || ft_atoi_lib(argv[2]) == 0)
-        {
-            printf("Error: All time values must be greater than 0.\n");
-            return (0);
-        }
         printf("Error: Failed to initialize state\n");
         return (1);
     }
