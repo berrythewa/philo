@@ -7,7 +7,7 @@ static int validate_args(int argc, char **argv)
 
     for (i = 1; i < argc; i++)
     {
-        temp = ft_atoi_lib(argv[i]);
+        temp = ft_atoi(argv[i]);
         if (temp <= 0 || temp > INT_MAX)
         {
             printf("Error: Invalid argument '%s'. \
@@ -26,8 +26,10 @@ static int init_mutexes(t_state *state)
     int i;
 
     state->forks = malloc(sizeof(pthread_mutex_t) * state->num_philosophers);
-    if (!state->forks)
+    if (!state->forks){
+        printf("Error: Failed to malloc space for %d forks\n", state->num_philosophers);
         return (1);
+    }
     
     for (i = 0; i < state->num_philosophers; i++)
     {
@@ -59,7 +61,10 @@ static int init_philosophers(t_state *state)
 
     state->philosophers = malloc(sizeof(t_philosopher) * state->num_philosophers);
     if (!state->philosophers)
+    {
+        printf("Error: philosopher malloc failed.");
         return (1);
+    }
     
     for (i = 0; i < state->num_philosophers; i++)
     {
@@ -98,6 +103,7 @@ int init_state(t_state *state, int argc, char **argv)
 
     if (init_mutexes(state) != 0 || init_philosophers(state) != 0)
     {
+        // printf("Error: could not init mutexes or philosopher threads");
         free_resources(state);
         return (1);
     }

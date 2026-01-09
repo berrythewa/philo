@@ -48,7 +48,6 @@ long long   get_time(void);
 int         smart_sleep(long long duration, t_state *state);
 int         log_status(t_state *state, int id, char *status);
 int         ft_atoi(const char *str);
-int         ft_atoi_lib(const char *str);
 void        free_resources(t_state *state);
 
 #endif

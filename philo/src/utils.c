@@ -6,7 +6,7 @@
 /*   By: wdaher-a <wdaher-a@student.s19.be>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/27 17:00:26 by wdaher-a          #+#    #+#             */
-/*   Updated: 2026/01/09 12:43:50 by wdaher-a         ###   ########.fr       */
+/*   Updated: 2026/01/09 13:15:10 by wdaher-a         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,39 +31,35 @@ int     log_status(t_state *state, int id, char *status)
         return (0);
 }
 
+
 int ft_atoi(const char *str)
 {
-    int i = 0;
-    int sign = 1;
-    long long result = 0;
+    int i;
+    int sign;
+    int result;
 
-    while (str[i] == ' ' || (str[i] >= 9 && str[i] <= 13))
-        i++;
+    if (!str)
+        return (0);
 
+    i = 0;
+    sign = 1;
+    result = 0;
+   while (str[i] == ' ' || str[i] == '\t' || str[i] == '\n' ||
+        str[i] == '\v' || str[i] == '\f' || str[i] == '\r')
+        ++i;
     if (str[i] == '-' || str[i] == '+')
     {
         if (str[i] == '-')
             sign = -1;
-        i++;
+        ++i;
     }
-
     while (str[i] >= '0' && str[i] <= '9')
     {
         result = result * 10 + (str[i] - '0');
-        if (result > INT_MAX)
-        i++;
+        ++i;
     }
-
-    result *= sign;
-
-    if (result > INT_MAX)
-        return INT_MAX;
-    if (result < INT_MIN)
-        return INT_MIN;
-
-    return (int)result;
+    return (sign * result);
 }
-
 
 void free_resources(t_state *state)
 {
