@@ -8,6 +8,7 @@
 # include <sys/time.h>
 # include <limits.h>
 
+
 typedef struct s_state t_state;
 
 typedef struct s_philosopher

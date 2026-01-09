@@ -8,11 +8,15 @@ static int validate_args(int argc, char **argv)
     for (i = 1; i < argc; i++)
     {
         temp = ft_atoi_lib(argv[i]);
-        if (temp < 0 || temp > INT_MAX)
+        if (temp <= 0 || temp > INT_MAX)
         {
-            printf("Error: Invalid argument '%s'. All arguments must be non-negative integers.\n", argv[i]);
+            printf("Error: Invalid argument '%s'. \
+                All arguments must be non-negative integers and greater than 0.\n",
+                argv[i]
+            );
             return (1);
         }
+        
     }
     return (0);
 }
@@ -75,11 +79,11 @@ int init_state(t_state *state, int argc, char **argv)
     if (validate_args(argc, argv))
         return (1);
 
-    state->num_philosophers = ft_atoi_lib(argv[1]);
-    state->time_to_die = ft_atoi_lib(argv[2]);
-    state->time_to_eat = ft_atoi_lib(argv[3]);
-    state->time_to_sleep = ft_atoi_lib(argv[4]);
-    state->num_meals = (argc == 6) ? ft_atoi_lib(argv[5]) : -1;
+    state->num_philosophers = ft_atoi(argv[1]);
+    state->time_to_die = ft_atoi(argv[2]);
+    state->time_to_eat = ft_atoi(argv[3]);
+    state->time_to_sleep = ft_atoi(argv[4]);
+    state->num_meals = (argc == 6) ? ft_atoi(argv[5]) : -1;
     state->someone_died = 0;
     state->finished_eating = 0;
     state->all_ate = 0;
